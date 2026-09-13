@@ -18,6 +18,32 @@ My App__2026-09-13_AM-3-01-32.png         ->   myapp--2026-09-13--03-01-32__am.p
 
 Renaming never changes a file's created or modified date, so sorting by date keeps working.
 
+## Import It
+
+```ts
+import { toFxName } from "fx-renamer/fx-name"
+
+toFxName("My App. --2026-09-13--11-08-01--utc.png", Date.now())
+// "myapp--2026-09-13--05-08-01__am.png"
+```
+
+## Functions
+
+Full documentation for every function, with its signature, how it works
+step by step, and worked examples, lives in [`_docs/`](_docs/DOC__fx-renamer--api--overview.md):
+
+| Function | Doc |
+|----------|-----|
+| `toFxName` | [`DOC__fx-renamer--api--to-fx-name.md`](_docs/DOC__fx-renamer--api--to-fx-name.md) |
+| `parseTimestamp` | [`DOC__fx-renamer--api--parse-timestamp.md`](_docs/DOC__fx-renamer--api--parse-timestamp.md) |
+| `cleanPrefix` | [`DOC__fx-renamer--api--clean-prefix.md`](_docs/DOC__fx-renamer--api--clean-prefix.md) |
+| `isClean` | [`DOC__fx-renamer--api--is-clean.md`](_docs/DOC__fx-renamer--api--is-clean.md) |
+
+[`DOC__fx-renamer--cookbook--filename-patterns.md`](_docs/DOC__fx-renamer--cookbook--filename-patterns.md)
+lists every capture-tool naming shape currently recognized, and the honest
+gaps -- including macOS's own default screenshot name, which is not
+recognized yet -- as a starting list for the next addition.
+
 ## Use
 
 ```bash

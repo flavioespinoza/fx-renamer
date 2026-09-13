@@ -5,11 +5,20 @@
   "scripts": {
     "test": "node --test \"modules/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test",
     "rename": "node scripts/fx-rename.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["filename", "rename", "screenshot", "typescript", "esm", "no-regex"],
+  "author": "Flavio Espinoza",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flavioespinoza/fx-renamer.git"
+  },
+  "homepage": "https://github.com/flavioespinoza/fx-renamer#readme",
+  "bugs": {
+    "url": "https://github.com/flavioespinoza/fx-renamer/issues"
+  },
   "type": "module",
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
