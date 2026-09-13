@@ -1,0 +1,26 @@
+{
+  "name": "fx-renamer",
+  "version": "0.1.0",
+  "description": "File-name utilities: rename screenshots and recordings to clean, sortable names. Plain string calls, no regex.",
+  "scripts": {
+    "test": "node --test \"modules/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "rename": "node scripts/fx-rename.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/node": "^26.5.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  },
+  "exports": {
+    "./fx-name": "./modules/fx-name/fx-name.ts"
+  }
+}
