@@ -6,6 +6,9 @@
 // already published; pass --include-tracked to override), files younger than --min-age-ms (default
 // 3000) so an app still writing is left alone, and files created before --newer-than. Renaming does
 // not change a file's created or modified date. Every rename is logged to _tmp/fx-rename.log.
+//
+// The project: when _tmp/project.txt holds a name (fx-project sol-bot), every new name starts with it,
+// so a capture never has to carry "Visual Studio Code" to say where it came from. fx-project off clears it.
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
@@ -23,7 +26,20 @@ const minAgeMs = flagValue("--min-age-ms") ?? 3000
 const newerThanMs = flagValue("--newer-than") ?? 0
 const valueIndexes = [flagIndex("--min-age-ms"), flagIndex("--newer-than")].filter((i) => i >= 0).map((i) => i + 1)
 const targets = args.filter((a, i) => !a.startsWith("--") && !valueIndexes.includes(i))
-const logFile = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "_tmp", "fx-rename.log")
+const tmpDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "_tmp")
+const logFile = path.join(tmpDir, "fx-rename.log")
+let project = ""
+try {
+	project = fs.readFileSync(path.join(tmpDir, "project.txt"), "utf8").trim()
+} catch {
+	project = ""
+}
+
+function withProject(name: string): string {
+	if (!project || name === project || name.startsWith(project + "--")) return name
+	// A name that is only a timestamp starts with the date: project--2026-09-18--...
+	return project + "--" + name
+}
 
 function isTracked(file: string): boolean {
 	try {
@@ -62,7 +78,7 @@ for (const file of targets.flatMap(filesFrom)) {
 	if (Date.now() - stat.mtimeMs < minAgeMs) continue
 	if (newerThanMs && stat.birthtimeMs < newerThanMs) continue
 	if (!includeTracked && isTracked(file)) continue
-	let next = toFxName(name, stat.birthtimeMs)
+	let next = withProject(toFxName(name, stat.birthtimeMs))
 	if (next === name) continue
 	// On a case-insensitive disk "Jul" and "jul" are the same file, which is not a clash.
 	const sameFile = (candidate: string): boolean => {

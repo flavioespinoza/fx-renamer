@@ -2,7 +2,7 @@
 //
 // Output shape: {prefix}--YYYY-MM-DD--HH-MM-SS[--suffix]__am|pm.{ext}, lowercase, Mountain time,
 // 24-hour, zero-padded, with an __am or __pm tag appended after any known time. Flavio's rule for
-// image names: remove every space and every period except the extension's dot. Date-only names
+// image names: words joined by single dashes, every period removed except the extension's dot. Date-only names
 // carry no clock time, so no __am or __pm tag is added. No regex anywhere in this project: plain
 // string calls only.
 //
@@ -64,6 +64,8 @@ function isAmPm(value: string): boolean {
 }
 
 function to24(hour: number, ampm: string): number {
+	// Already 24-hour (an FX name read a second time: 20-04-11__pm): keep it, never add 12 again.
+	if (hour > 12) return hour
 	const pm = ampm.toLowerCase() === "pm"
 	if (hour === 12) return pm ? 12 : 0
 	return pm ? hour + 12 : hour
@@ -155,14 +157,32 @@ function localToEpoch(p: Parsed, second: number, timeZone: string): number {
 	return guess - zoneOffsetMs(first, timeZone)
 }
 
-/** Flavio's rule: lowercase, remove every space and every period, keep FX double dashes. */
+// The browser or editor a capture came from says nothing about what is in it (Flavio, Sep 18 2026).
+const DROPPED_APPS = ["google chrome", "chrome", "brave browser", "brave", "safari", "arc", "firefox", "microsoft edge", "visual studio code", "code", "cursor", "iterm2", "ghostty", "terminal"]
+
+/** Drop a leading browser name when a window title follows it: "Google Chrome--code-preferences-help". */
+function dropApp(raw: string): string {
+	const cut = raw.indexOf("--")
+	if (cut < 0) return raw
+	const head = raw.slice(0, cut).trim().toLowerCase()
+	return DROPPED_APPS.includes(head) ? raw.slice(cut + 2) : raw
+}
+
+/**
+ * Flavio's rule: lowercase, every word its own dash-joined piece, no periods, FX double dashes kept.
+ * Sep 18 2026: "logically rename stuff", so spaces become single dashes instead of vanishing.
+ */
 export function cleanPrefix(raw: string): string {
-	let s = raw.toLowerCase()
+	let s = dropApp(raw).toLowerCase()
 	s = s.replaceAll("—", "--").replaceAll("–", "--")
-	s = s.replaceAll("…", "").replaceAll("[", "").replaceAll("]", "").replaceAll("(", "").replaceAll(")", "")
-	s = s.replaceAll(" ", "")
+	s = s.replaceAll("…", " ").replaceAll("[", " ").replaceAll("]", " ").replaceAll("(", " ").replaceAll(")", " ")
 	s = s.replaceAll(".", "")
 	s = s.replaceAll("__", "--").replaceAll("_", "-")
+	while (s.includes("  ")) s = s.replaceAll("  ", " ")
+	// A double dash is an FX break and keeps its spaces off; a spaced single hyphen is just a word gap.
+	s = s.replaceAll(" --", "--").replaceAll("-- ", "--")
+	s = s.replaceAll(" - ", "-").replaceAll(" -", "-").replaceAll("- ", "-")
+	s = s.replaceAll(" ", "-")
 	let kept = ""
 	for (const ch of s) {
 		if ((ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9") || ch === "-") kept += ch
