@@ -1,9 +1,9 @@
 // fx-name -- turn a screenshot or recording file name into an FX-style name.
 //
-// Output shape: {prefix}--YYYY-MM-DD--HH-MM-SS[--suffix]__am|pm.{ext}, lowercase, Mountain time,
-// 24-hour, zero-padded, with an __am or __pm tag appended after any known time. Flavio's rule for
+// Output shape: {prefix}--YYYY-MM-DD--HH-MM-SS[--suffix]--am|pm.{ext}, lowercase, Mountain time,
+// 24-hour, zero-padded, with an --am or --pm tag appended after any known time. Flavio's rule for
 // image names: words joined by single dashes, every period removed except the extension's dot. Date-only names
-// carry no clock time, so no __am or __pm tag is added. No regex anywhere in this project: plain
+// carry no clock time, so no --am or --pm tag is added. No regex anywhere in this project: plain
 // string calls only.
 //
 // UTC or local: CleanShot X writes the timestamp in UTC only when "Use UTC time zone" is checked,
@@ -64,7 +64,7 @@ function isAmPm(value: string): boolean {
 }
 
 function to24(hour: number, ampm: string): number {
-	// Already 24-hour (an FX name read a second time: 20-04-11__pm): keep it, never add 12 again.
+	// Already 24-hour (an FX name read a second time: 20-04-11--pm): keep it, never add 12 again.
 	if (hour > 12) return hour
 	const pm = ampm.toLowerCase() === "pm"
 	if (hour === 12) return pm ? 12 : 0
@@ -233,6 +233,6 @@ export function toFxName(fileName: string, birthtimeMs: number, timeZone: string
 	if (p.second === null && Math.abs(epoch - birthtimeMs) < 60 * 1000) epoch = Math.floor(birthtimeMs / 1000) * 1000
 
 	const q = partsIn(epoch, timeZone)
-	const ampm = Number(q.hour) < 12 ? "__am" : "__pm"
+	const ampm = Number(q.hour) < 12 ? "--am" : "--pm"
 	return lead + q.year + "-" + q.month + "-" + q.day + "--" + q.hour + "-" + q.minute + "-" + q.second + tail + ampm + ext
 }

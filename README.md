@@ -9,11 +9,11 @@ File-name utilities. The first one renames screenshots and screen recordings to 
 - **C**: **Keep Double Dashes** -- a `--` typed or dictated into the name stays, so `my-app --issue-74` becomes `my-app--issue-74`.
 - **D**: **One Timestamp Shape** -- `YYYY-MM-DD--HH-MM-SS`, 24-hour, zero-padded, in the home time zone (America/Denver by default).
 - **E**: **Reads Many Inputs** -- CleanShot X names with AM or PM before or after the time, 24-hour names, UTC names ending in `--utc`, and month-name dates like `July-08-2026_05.15.PM`. The file's own creation time decides whether a time was UTC or local.
-- **F**: **An AM or PM Tag at the End** -- every name with a known time gets `__am` or `__pm` appended right before the extension, so the hour reads at a glance without decoding 24-hour time. A date-only name (no time in it at all) gets no tag.
+- **F**: **An AM or PM Tag at the End** -- every name with a known time gets `--am` or `--pm` appended right before the extension, so the hour reads at a glance without decoding 24-hour time. A date-only name (no time in it at all) gets no tag.
 
 ```txt
-My App. --2026-09-13--11-08-01--utc.png   ->   myapp--2026-09-13--05-08-01__am.png
-My App__2026-09-13_AM-3-01-32.png         ->   myapp--2026-09-13--03-01-32__am.png
+My App. --2026-09-13--11-08-01--utc.png   ->   myapp--2026-09-13--05-08-01--am.png
+My App__2026-09-13_AM-3-01-32.png         ->   myapp--2026-09-13--03-01-32--am.png
 ```
 
 Renaming never changes a file's created or modified date, so sorting by date keeps working.
@@ -24,7 +24,7 @@ Renaming never changes a file's created or modified date, so sorting by date kee
 import { toFxName } from "fx-renamer/fx-name"
 
 toFxName("My App. --2026-09-13--11-08-01--utc.png", Date.now())
-// "myapp--2026-09-13--05-08-01__am.png"
+// "myapp--2026-09-13--05-08-01--am.png"
 ```
 
 ## Functions
