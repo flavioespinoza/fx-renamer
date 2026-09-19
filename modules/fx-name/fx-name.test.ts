@@ -77,3 +77,7 @@ test("an FX name read again is left alone, not pushed 12 hours ahead", () => {
 test("an older __pm name moves to the --pm tag without shifting the hour", () => {
 	assert.equal(toFxName("demo--2026-09-18--20-04-11__pm.png", Date.UTC(2026, 8, 19, 2, 4, 11)), "demo--2026-09-18--20-04-11--pm.png")
 })
+
+test("the CleanShot pattern on both Macs since Sep 18 2026: %a--%t__%y-%m-%d_%H.%M.%S--utc", () => {
+	assert.equal(toFxName("Google Chrome--code-preferences-help (Channel… Mercor - 19 new items - Slack__2026-09-19_02.04.11--utc.png", Date.UTC(2026, 8, 19, 2, 4, 11)), "code-preferences-help-channel-mercor-19-new-items-slack--2026-09-18--20-04-11--pm.png")
+})
