@@ -3,3 +3,6 @@ _tmp/
 .DS_Store
 .env
 .env.*
+_test-watch/
+.fx-since
+.fx-project

@@ -7,8 +7,9 @@
 // 3000) so an app still writing is left alone, and files created before --newer-than. Renaming does
 // not change a file's created or modified date. Every rename is logged to _tmp/fx-rename.log.
 //
-// The project: when _tmp/project.txt holds a name (fx-project sol-bot), every new name starts with it,
-// so a capture never has to carry "Visual Studio Code" to say where it came from. fx-project off clears it.
+// The project: when <folder>/.fx-project holds a name (e.g. "sol-bot"), every new name starts with it,
+// so a capture never has to carry "Visual Studio Code" to say where it came from. Falls back to
+// _tmp/project.txt (written by the fx-project command) when no per-folder file exists.
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
@@ -28,14 +29,22 @@ const valueIndexes = [flagIndex("--min-age-ms"), flagIndex("--newer-than")].filt
 const targets = args.filter((a, i) => !a.startsWith("--") && !valueIndexes.includes(i))
 const tmpDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "_tmp")
 const logFile = path.join(tmpDir, "fx-rename.log")
-let project = ""
-try {
-	project = fs.readFileSync(path.join(tmpDir, "project.txt"), "utf8").trim()
-} catch {
-	project = ""
+
+function readProject(dir: string): string {
+	// Per-folder config takes priority; fall back to the shared _tmp/project.txt for
+	// the old fx-project command and any live job installed before this change.
+	try {
+		return fs.readFileSync(path.join(dir, ".fx-project"), "utf8").trim()
+	} catch {
+		try {
+			return fs.readFileSync(path.join(tmpDir, "project.txt"), "utf8").trim()
+		} catch {
+			return ""
+		}
+	}
 }
 
-function withProject(name: string): string {
+function withProject(project: string, name: string): string {
 	if (!project || name === project || name.startsWith(project + "--")) return name
 	// A name that is only a timestamp starts with the date: project--2026-09-18--...
 	return project + "--" + name
@@ -71,14 +80,17 @@ if (targets.length === 0) {
 }
 
 let count = 0
-for (const file of targets.flatMap(filesFrom)) {
+for (const target of targets) {
+  const targetDir = fs.statSync(target).isDirectory() ? target : path.dirname(target)
+  const project = readProject(targetDir)
+  for (const file of filesFrom(target)) {
 	const name = path.basename(file)
 	const dir = path.dirname(file)
 	const stat = fs.statSync(file)
 	if (Date.now() - stat.mtimeMs < minAgeMs) continue
 	if (newerThanMs && stat.birthtimeMs < newerThanMs) continue
 	if (!includeTracked && isTracked(file)) continue
-	let next = withProject(toFxName(name, stat.birthtimeMs))
+	let next = withProject(project, toFxName(name, stat.birthtimeMs))
 	if (next === name) continue
 	// On a case-insensitive disk "Jul" and "jul" are the same file, which is not a clash.
 	const sameFile = (candidate: string): boolean => {
@@ -104,5 +116,6 @@ for (const file of targets.flatMap(filesFrom)) {
 		log("renamed: " + path.join(dir, name) + " -> " + next)
 	}
 	count++
-}
+  } // end for file
+} // end for target
 console.log((dryRun ? "would rename " : "renamed ") + count + " file(s)")

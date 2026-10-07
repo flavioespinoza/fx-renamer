@@ -58,11 +58,48 @@ node scripts/fx-rename.ts ~/Pictures/Screenshots
 
 ## Watch a Folder (macOS)
 
+Install a launch agent for any folder. The agent renames each new file about five seconds after it lands. Files already in the folder are left alone. Every rename is logged to `_tmp/fx-rename.log`.
+
 ```bash
+# Install a watcher on one folder (label: com.fx-renamer.watch.Screenshots)
 scripts/install-watch.sh ~/Pictures/Screenshots
+
+# Install a second watcher on a different folder at the same time
+# (label: com.fx-renamer.watch.Recordings)
+scripts/install-watch.sh ~/Movies/Recordings
+
+# Provide an explicit suffix to control the label yourself
+scripts/install-watch.sh ~/Pictures/Screenshots my-label
+# label becomes: com.fx-renamer.watch.my-label
 ```
 
-A launch agent renames each new file about five seconds after it lands. Files already in the folder are left alone. Every rename is logged to `_tmp/fx-rename.log`.
+Each install writes the current time into `<folder>/.fx-since` so only files arriving after install are renamed. The launchd label includes the suffix, so multiple watchers coexist without conflict.
+
+**Set a project prefix for a folder.** Drop a file named `.fx-project` into the folder containing just the project slug, for example:
+
+```txt
+sol-bot
+```
+
+Every renamed file in that folder will start with `sol-bot--`. Remove the file to stop prefixing. The old `fx-project` command still works; `.fx-project` in the folder takes priority.
+
+**List running watchers.**
+
+```bash
+launchctl list | grep com.fx-renamer
+```
+
+**Remove a watcher.**
+
+```bash
+# Default suffix (basename of folder)
+launchctl bootout "gui/$(id -u)/com.fx-renamer.watch.Screenshots"
+rm ~/Library/LaunchAgents/com.fx-renamer.watch.Screenshots.plist
+
+# Custom suffix
+launchctl bootout "gui/$(id -u)/com.fx-renamer.watch.my-label"
+rm ~/Library/LaunchAgents/com.fx-renamer.watch.my-label.plist
+```
 
 ## Add a Module
 
