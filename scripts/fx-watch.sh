@@ -18,6 +18,8 @@ if [[ -n "$FOLDER" ]]; then
   SINCE="$(cat "$SINCE_FILE" 2>/dev/null || echo 0)"
   sleep 5
   node "$ROOT/scripts/fx-rename.ts" --min-age-ms 2000 --newer-than "$SINCE" "$FOLDER" >> "$ROOT/_tmp/fx-watch.out.log" 2>&1
+  # then file each renamed capture into its project folder (no-op when the folder has no route-map.txt)
+  zsh "$ROOT/scripts/fx-route.sh" "$FOLDER" >> "$ROOT/_tmp/fx-watch.out.log" 2>&1
 else
   # No argument: backward-compat path -- loop over $@ (empty = no-op, same as before).
   SINCE="$(cat "$ROOT/_tmp/watch-since.txt" 2>/dev/null || echo 0)"
